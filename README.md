@@ -64,6 +64,6 @@ and open the link to the local web page you see in the terminal
 ---
 
 Here's an additional demo, with the cubes spread further apart.
-![](readme_images/wide.gif)
+![](readme_images/spread.gif)
 
 <span style="color:gray">(gif may take a while to load)</span>
