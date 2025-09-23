@@ -3,8 +3,7 @@ A bare-bones custom 3D renderer, built to learn how to create 3D graphics from s
 
 As of right now, it can render an arbitrary number of triangle meshes, specifying **position**, **rotation** and **scale** for each individual mesh.
 
-
-<image src="readme_images/crammed.gif"/>
+![cubes floating towards camera - crammed](readme_images/crammed.gif)
 
 ### Multiple Model Matrices in a single Draw Call
 This renderer can render different meshes with separate positions and rotations on a single **draw call**.
