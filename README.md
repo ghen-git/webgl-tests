@@ -5,6 +5,7 @@ As of right now, it can render an arbitrary number of triangle meshes, specifyin
 
 Below is a demo with 10,000 meshes, each mesh's model matrix (the matrix that specifies the rotation, position and scale of the mesh) is updated every frame.
 ![](readme_images/crammed.gif)
+
 <span style="color:gray">(gif may take a while to load)</span>
 
 ### Current Features
@@ -64,4 +65,5 @@ and open the link to the local web page you see in the terminal
 
 Here's an additional demo, with the cubes spread further apart.
 ![](readme_images/wide.gif)
+
 <span style="color:gray">(gif may take a while to load)</span>
