@@ -1,9 +1,17 @@
 # WebGL Tests
-A bare-bones custom 3D renderer, built to learn how to create 3D graphics from scratch. It uses **WebGL** and `gl-matrix` (a popular library to represent vectors in javascript).
+A bare-bones custom 3D renderer I built to learn how to create 3D graphics from scratch. It uses **WebGL** and `gl-matrix` (a popular library to represent vectors in javascript).
 
 As of right now, it can render an arbitrary number of triangle meshes, specifying **position**, **rotation** and **scale** for each individual mesh.
 
-![cubes floating towards camera - crammed](readme_images/crammed.gif)
+Below is a demo with 10,000 meshes, each mesh's model matrix (the matrix that specifies the rotation, position and scale of the mesh) is updated every frame.
+![](readme_images/crammed.gif)
+<span style="color:gray">(gif may take a while to load)</span>
+
+### Current Features
+The project contains:
+- a full **minimal rendering pipeline**: basic meshes, a vertex and fragment shader and code to send instructions and the required data to the GPU at every frame.
+- a module with some mathematical operations that are used for 3D rendering (building a **projection matrix**, **multiplying quaternions**, going from an **axis angle rotation to a quaternion** and from a **quaternion to a rotation matrix**). I wrote the functions myself to understand how they work.
+- a way to send multiple model matrices in a single draw call, explained further below
 
 ### Multiple Model Matrices in a single Draw Call
 This renderer can render different meshes with separate positions and rotations on a single **draw call**.
@@ -36,3 +44,24 @@ vec4 getValueByIndexFromTexture(sampler2D tex, int index) {
   return texelFetch(tex, ivec2(col, row), 0);
 }
 ```
+
+### Installation
+Requirements: **npm** and **Node.js**, or compatible alternatives.
+
+After downloading the project, open a terminal in the project root folder and run
+```shell
+npm i
+```
+to install the required dependencies (`gl-matrix` to represent vectors and `vite` to compile Typescript code runtime and test on the browser).
+
+To start the project run
+```shell
+npm run dev
+```
+and open the link to the local web page you see in the terminal
+
+---
+
+Here's an additional demo, with the cubes spread further apart.
+![](readme_images/wide.gif)
+<span style="color:gray">(gif may take a while to load)</span>
