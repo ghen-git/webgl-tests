@@ -5,11 +5,25 @@ import { mat4, quat, vec3, vec4 } from "gl-matrix";
  * a quaternion
  */
 export function axisAngleToQuat(axisAngle: vec4) {
+    const angle = axisAngle[3];
+    const normalizedDir = vec3.normalize(vec3.create(), vec3.fromValues(axisAngle[0], axisAngle[1], axisAngle[2]))
+
     return quat.fromValues(
-        axisAngle[0] * Math.sin(axisAngle[3] / 2),
-        axisAngle[1] * Math.sin(axisAngle[3] / 2),
-        axisAngle[2] * Math.sin(axisAngle[3] / 2),
-        Math.cos(axisAngle[3] / 2)
+        normalizedDir[0] * Math.sin(angle / 2),
+        normalizedDir[1] * Math.sin(angle / 2),
+        normalizedDir[2] * Math.sin(angle / 2),
+        Math.cos(angle / 2)
+    )
+}
+
+export function quatToAxisAngle(quat: quat) {
+    const angle = Math.acos(quat[3]) * 2;
+
+    return vec4.fromValues(
+        quat[0] / Math.sin(angle / 2),
+        quat[1] / Math.sin(angle / 2),
+        quat[2] / Math.sin(angle / 2),
+        angle
     )
 }
 

@@ -1,11 +1,13 @@
 import { mat4, quat, vec3, vec4 } from 'gl-matrix';
-import { axisAngleToQuat, quaternionToRotationMatrix, quatMul, rgbToScreenSpace, toRad } from './math_ops';
+import { axisAngleToQuat, quaternionToRotationMatrix, quatMul, quatToAxisAngle, rgbToScreenSpace, toRad } from './math_ops';
 
 interface Object {
     triangles: Triangle[],
     vertices: VertexData[],
     position: vec3,
-    rotation: quat
+    scale: vec3,
+    rotation: quat,
+    speed: number
 }
 
 interface Triangle {
@@ -85,17 +87,17 @@ const cubeVertices: VertexData[] = [
     { vertex: [.5, -.5, -.5 + -.0], colour: colours.orange, normal: [0.0, 0.0, 1.0] },
     { vertex: [-.5, .5, -.5 + -.0], colour: colours.orange, normal: [0.0, 0.0, 1.0] },
     { vertex: [.5, .5, -.5 + -.0], colour: colours.orange, normal: [0.0, 0.0, 1.0] }, // front face 8 - 11
-    { vertex: [-.5, -.5, .5 + .0], colour: colours.pink, normal: [0.0, 0.0, -1.0] }, 
-    { vertex: [.5, -.5, .5 + .0], colour: colours.pink, normal: [0.0, 0.0, -1.0] }, 
-    { vertex: [-.5, .5, .5 + .0], colour: colours.pink, normal: [0.0, 0.0, -1.0] }, 
+    { vertex: [-.5, -.5, .5 + .0], colour: colours.pink, normal: [0.0, 0.0, -1.0] },
+    { vertex: [.5, -.5, .5 + .0], colour: colours.pink, normal: [0.0, 0.0, -1.0] },
+    { vertex: [-.5, .5, .5 + .0], colour: colours.pink, normal: [0.0, 0.0, -1.0] },
     { vertex: [.5, .5, .5 + .0], colour: colours.pink, normal: [0.0, 0.0, -1.0] }, // back face 12 - 15
-    { vertex: [-.5 - .0, -.5, -.5], colour: colours.salmon, normal: [-1.0, 0.0, 0.0] }, 
-    { vertex: [-.5 - .0, -.5, .5], colour: colours.salmon, normal: [-1.0, 0.0, 0.0] }, 
-    { vertex: [-.5 - .0, .5, -.5], colour: colours.salmon, normal: [-1.0, 0.0, 0.0] }, 
+    { vertex: [-.5 - .0, -.5, -.5], colour: colours.salmon, normal: [-1.0, 0.0, 0.0] },
+    { vertex: [-.5 - .0, -.5, .5], colour: colours.salmon, normal: [-1.0, 0.0, 0.0] },
+    { vertex: [-.5 - .0, .5, -.5], colour: colours.salmon, normal: [-1.0, 0.0, 0.0] },
     { vertex: [-.5 - .0, .5, .5], colour: colours.salmon, normal: [-1.0, 0.0, 0.0] }, // left face 16 - 19
-    { vertex: [.5 + .0, -.5, -.5], colour: colours.salmon, normal: [1.0, 0.0, 0.0] }, 
-    { vertex: [.5 + .0, -.5, .5], colour: colours.salmon, normal: [1.0, 0.0, 0.0] }, 
-    { vertex: [.5 + .0, .5, -.5], colour: colours.salmon, normal: [1.0, 0.0, 0.0] }, 
+    { vertex: [.5 + .0, -.5, -.5], colour: colours.salmon, normal: [1.0, 0.0, 0.0] },
+    { vertex: [.5 + .0, -.5, .5], colour: colours.salmon, normal: [1.0, 0.0, 0.0] },
+    { vertex: [.5 + .0, .5, -.5], colour: colours.salmon, normal: [1.0, 0.0, 0.0] },
     { vertex: [.5 + .0, .5, .5], colour: colours.salmon, normal: [1.0, 0.0, 0.0] }, // right face
 ];
 
@@ -134,10 +136,6 @@ export function init(canvas: HTMLCanvasElement, window: Window) {
     renderer.start();
 }
 
-function randInt(min: number, max: number) {
-    return Math.random() * (max - min) + (min);
-}
-
 export class Renderer {
     private gl: WebGL2RenderingContext;
     private canvas: HTMLCanvasElement;
@@ -163,12 +161,15 @@ export class Renderer {
 
         const size = 100;
 
-        for (let i = 0; i < size * size; i++) {
+        for (let i = 0; i < 10000; i++) {
             this.objects.push({
                 triangles: cubeTriangles,
                 vertices: cubeVertices,
-                position: vec3.fromValues(randInt(-size, size), randInt(-size, size), randInt(-30, -size * 5)),
-                rotation: quat.create()
+                // position: vec3.fromValues(randInt(-size * 2, size * 2), randInt(-size, size), randInt(-30, -size * 5)),
+                position: vec3.fromValues(rand(-size, size), rand(-size, size), rand(-30, -size * 5)),
+                rotation: quat.create(),
+                speed: 0.01,
+                scale: /*randInt(0, 10) < 1 ? vec3.fromValues(1, randInt(5, 10), randInt(2, 5)): */vec3.fromValues(1, 1, 1)
             });
         }
 
@@ -260,9 +261,14 @@ export class Renderer {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) // clears buffers selected by a mask to a preset value
 
         // bare bones test for rotation with quaternions
-        this.objects.forEach(obj => {
-            obj.rotation = quatMul(obj.rotation, axisAngleToQuat([randInt(0, 1), randInt(0, 1), randInt(0, 1), toRad(1)]));
-            obj.position[2] += 0.1
+        this.objects.forEach((obj, i) => {
+            // obj.rotation = quatMul(obj.rotation, axisAngleToQuat([randInt(-1, 1), randInt(-1, 1), randInt(-1, 1), toRad(1)]));
+            // if (i % 5 == 0)
+            //     obj.rotation = quatMul(obj.rotation, axisAngleToQuat([1, 0, 0, toRad(1)]));
+            // const dir = quatToAxisAngle(obj.rotation);
+
+            // vec3.add(obj.position, obj.position, vec3.scale(vec3.create(), vec3.fromValues(dir[0], dir[1], dir[2]), obj.speed));
+            obj.position[2] += obj.speed * 10;
 
             if (obj.position[2] > 20)
                 obj.position[2] -= 220;
@@ -287,18 +293,25 @@ export class Renderer {
                 0, 0, 1, 0,
                 obj.position[0], obj.position[1], obj.position[2], 1,
             );
+            const scaleMat = mat4.fromValues(
+                obj.scale[0], 0, 0, 0,
+                0, obj.scale[1], 0, 0,
+                0, 0, obj.scale[2], 0,
+                0, 0, 0, 1,
+            );
 
             const rotationMat = quaternionToRotationMatrix(obj.rotation);
 
             mat4.mul(modelViewMat, modelViewMat, translationMat);
             mat4.mul(modelViewMat, modelViewMat, rotationMat);
+            mat4.mul(modelViewMat, modelViewMat, scaleMat);
 
             matricesBuffer.push(...modelViewMat);
         });
 
 
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.renderingData!.shaderTextures.modelViewMatricesTexture);
-        const width = 4;
+        const width = 4096;
         const height = matricesBuffer.length / (width * 4);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA32F, width, height, 0, this.gl.RGBA, this.gl.FLOAT, new Float32Array(matricesBuffer));
     }
