@@ -159,17 +159,13 @@ export class Renderer {
         this.gl.depthFunc(this.gl.LEQUAL); // sets the comparison to see if an object's z is closer than another to <=
         this.gl.enable(this.gl.DEPTH_TEST); // activates depth testing (closer triangles get rendered on top of further ones)
 
-        const size = 100;
 
         for (let i = 0; i < 10000; i++) {
             this.objects.push({
                 triangles: cubeTriangles,
                 vertices: cubeVertices,
-                // position: vec3.fromValues(randInt(-size * 2, size * 2), randInt(-size, size), randInt(-30, -size * 5)),
-                position: vec3.fromValues(rand(-size, size), rand(-size, size), rand(-30, -size * 5)),
-                rotation: quat.create(),
-                speed: 0.01,
-                scale: /*randInt(0, 10) < 1 ? vec3.fromValues(1, randInt(5, 10), randInt(2, 5)): */vec3.fromValues(1, 1, 1)
+                position: vec3.fromValues(randInt(-50, 50), randInt(-50, 50), randInt(-30, -50 * 5)),
+                rotation: quat.create()
             });
         }
 
